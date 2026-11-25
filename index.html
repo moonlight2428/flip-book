@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FLIPBOOK STUDIO — Ubah Dokumen Menjadi Pengalaman Membaca Digital</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📖</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css?v=5">
+</head>
+<body>
+
+<!-- ===================== APP SHELL ===================== -->
+<div id="appShell" class="app-shell">
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-logo">📖</div>
+      <div class="brand-text">
+        <h1>FLIPBOOK<span>STUDIO</span></h1>
+        <p>Ubah Dokumen Menjadi Pengalaman Membaca Digital.</p>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="#" class="nav-item active" data-view="dashboard"><span class="nav-ico">▦</span> Dashboard</a>
+      <a href="#" class="nav-item" data-view="library"><span class="nav-ico">▤</span> Koleksi Buku</a>
+      <a href="#" class="nav-item" data-view="create"><span class="nav-ico">✚</span> Buat Flipbook</a>
+      <a href="#" class="nav-item" data-view="guide"><span class="nav-ico">?</span> Panduan</a>
+    </nav>
+    <div class="sidebar-foot">
+      <div class="storage-card glass">
+        <div class="storage-top"><span>Penyimpanan Lokal</span><span id="storagePct">0%</span></div>
+        <div class="bar"><i id="storageBar"></i></div>
+        <small id="storageText">0 KB terpakai</small>
+      </div>
+      <p class="foot-note">Data tersimpan di perangkat Anda (IndexedDB).</p>
+    </div>
+  </aside>
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+  <!-- Main -->
+  <main class="main">
+    <header class="topbar glass">
+      <button class="icon-btn burger" id="btnBurger" title="Menu">☰</button>
+      <div class="topbar-title"><h2 id="viewTitle">Dashboard</h2><p id="viewSub">Ringkasan aktivitas flipbook Anda</p></div>
+      <div class="topbar-actions">
+        <button class="icon-btn" id="btnTheme" title="Mode siang / malam">🌙</button>
+        <button class="btn btn-primary" id="btnNewBook">✚ Buat Flipbook Baru</button>
+      </div>
+    </header>
+
+    <!-- ---------- VIEW: DASHBOARD ---------- -->
+    <section class="view" id="view-dashboard">
+      <div class="stats-grid">
+        <div class="stat-card glass"><div class="stat-ico c1">📚</div><div><h3 id="statBooks">0</h3><p>Total Buku</p></div></div>
+        <div class="stat-card glass"><div class="stat-ico c2">📄</div><div><h3 id="statPages">0</h3><p>Total Halaman</p></div></div>
+        <div class="stat-card glass"><div class="stat-ico c3">👁</div><div><h3 id="statOpened">0</h3><p>Buku Terakhir Dibuka</p></div></div>
+        <div class="stat-card glass"><div class="stat-ico c4">🔖</div><div><h3 id="statMarks">0</h3><p>Bookmark Aktif</p></div></div>
+      </div>
+
+      <div class="panel glass">
+        <div class="panel-head">
+          <h3>Koleksi Terbaru</h3>
+          <button class="btn btn-ghost" data-goto="library">Lihat Semua →</button>
+        </div>
+        <div id="dashEmpty" class="empty-state">
+          <div class="empty-ico">📖</div>
+          <h4>Belum ada flipbook</h4>
+          <p>Buat flipbook pertama Anda dari file PDF atau gambar.</p>
+          <button class="btn btn-primary" data-goto="create">✚ Buat Flipbook Baru</button>
+          <button class="btn btn-ghost" id="btnDemo">✨ Coba Contoh Demo</button>
+        </div>
+        <div id="dashGrid" class="book-grid"></div>
+      </div>
+
+      <div class="panel glass" id="historyPanel">
+        <div class="panel-head"><h3>Riwayat Baca Terakhir</h3></div>
+        <div id="historyList" class="history-list"></div>
+      </div>
+    </section>
+
+    <!-- ---------- VIEW: LIBRARY ---------- -->
+    <section class="view" id="view-library" hidden>
+      <div class="panel glass">
+        <div class="lib-toolbar">
+          <div class="search-box"><span>⌕</span><input type="text" id="libSearch" placeholder="Cari judul buku…"></div>
+          <select id="libSort" class="select">
+            <option value="new">Terbaru</option>
+            <option value="old">Terlama</option>
+            <option value="az">Nama A–Z</option>
+            <option value="za">Nama Z–A</option>
+            <option value="pages">Jumlah Halaman</option>
+          </select>
+        </div>
+        <div id="libEmpty" class="empty-state">
+          <div class="empty-ico">🗂</div>
+          <h4>Tidak ada buku</h4>
+          <p>Ubah kata kunci pencarian atau buat flipbook baru.</p>
+        </div>
+        <div id="libGrid" class="book-grid"></div>
+      </div>
+    </section>
+
+    <!-- ---------- VIEW: CREATE / EDIT ---------- -->
+    <section class="view" id="view-create" hidden>
+      <div class="create-layout">
+        <!-- Upload & pages -->
+        <div class="panel glass">
+          <div class="panel-head"><h3 id="createStepTitle">1 · Unggah Dokumen</h3></div>
+
+          <div id="dropZone" class="dropzone">
+            <div class="dz-ico">⇪</div>
+            <h4>Tarik & lepas file di sini</h4>
+            <p>PDF, JPG, JPEG, PNG, WEBP — bisa banyak gambar sekaligus</p>
+            <button class="btn btn-primary" id="btnPickFiles">Pilih File dari Komputer</button>
+            <input type="file" id="fileInput" multiple accept=".pdf,.jpg,.jpeg,.png,.webp,application/pdf,image/jpeg,image/png,image/webp" hidden>
+          </div>
+          <div id="uploadError" class="form-error" hidden></div>
+          <div id="uploadProgressWrap" class="progress-wrap" hidden>
+            <div class="progress-label"><span id="uploadProgressLabel">Memproses…</span><span id="uploadProgressPct">0%</span></div>
+            <div class="bar big"><i id="uploadProgressBar"></i></div>
+          </div>
+
+          <div id="pageEditor" hidden>
+            <div class="page-editor-head">
+              <span id="pageCountLabel">0 halaman</span>
+              <div class="page-editor-actions">
+                <button class="btn btn-ghost" id="btnSortTitle">↕ Urutkan Nama</button>
+                <button class="btn btn-ghost" id="btnClearPages">🗑 Kosongkan</button>
+              </div>
+            </div>
+            <p class="hint">Seret kartu untuk mengatur urutan halaman. Nomor = urutan final.</p>
+            <div id="pageList" class="page-list"></div>
+          </div>
+        </div>
+
+        <!-- Metadata -->
+        <div class="panel glass">
+          <div class="panel-head"><h3>2 · Detail & Kustomisasi Buku</h3></div>
+          <div class="form-grid">
+            <label class="field"><span>Judul Buku *</span><input type="text" id="fTitle" placeholder="Contoh: Laporan Tahunan 2026"></label>
+            <label class="field"><span>Penulis</span><input type="text" id="fAuthor" placeholder="Nama penulis / organisasi"></label>
+            <label class="field full"><span>Deskripsi</span><textarea id="fDesc" rows="2" placeholder="Deskripsi singkat buku…"></textarea></label>
+
+            <div class="field"><span>Cover Depan</span>
+              <div class="cover-pick">
+                <div class="cover-thumb" id="coverFrontThumb">—</div>
+                <div class="cover-pick-btns">
+                  <button class="btn btn-ghost" id="btnCoverFront">Pilih Halaman</button>
+                  <select id="coverFrontSel" class="select"></select>
+                </div>
+              </div>
+            </div>
+            <div class="field"><span>Cover Belakang</span>
+              <div class="cover-pick">
+                <div class="cover-thumb" id="coverBackThumb">—</div>
+                <div class="cover-pick-btns">
+                  <button class="btn btn-ghost" id="btnCoverBack">Pilih Halaman</button>
+                  <select id="coverBackSel" class="select"></select>
+                </div>
+              </div>
+            </div>
+
+            <label class="field"><span>Warna Background Reader</span><input type="color" id="fBgColor" value="#0b1020"></label>
+            <label class="field"><span>Warna Tema Aksen</span><input type="color" id="fAccent" value="#7c5cff"></label>
+            <label class="field"><span>Ukuran Buku</span>
+              <select id="fSize" class="select">
+                <option value="a4">A4 (Portrait)</option>
+                <option value="a5">A5 (Portrait)</option>
+                <option value="square">Persegi</option>
+                <option value="landscape">Landscape</option>
+              </select>
+            </label>
+            <label class="field"><span>Kecepatan Animasi</span>
+              <select id="fSpeed" class="select">
+                <option value="1400">Lambat</option>
+                <option value="900" selected>Normal</option>
+                <option value="500">Cepat</option>
+              </select>
+            </label>
+            <label class="field"><span>Jenis Transisi</span>
+              <select id="fTransition" class="select">
+                <option value="realistic">Realistik (lengkung kertas)</option>
+                <option value="slide">Slide</option>
+                <option value="fade">Fade</option>
+              </select>
+            </label>
+            <label class="field"><span>Mode Membaca</span>
+              <select id="fMode" class="select">
+                <option value="night">Malam (gelap)</option>
+                <option value="day">Siang (terang)</option>
+              </select>
+            </label>
+            <label class="field"><span>Visibilitas</span>
+              <select id="fVisibility" class="select">
+                <option value="private">Privat</option>
+                <option value="public">Publik (bisa dibagikan)</option>
+              </select>
+            </label>
+          </div>
+          <div class="form-error" id="metaError" hidden></div>
+          <div class="create-actions">
+            <button class="btn btn-ghost" id="btnCancelCreate">Batal</button>
+            <button class="btn btn-primary" id="btnSaveBook" disabled>💾 Simpan Flipbook</button>
+          </div>
+          <p class="hint">Auto-save aktif: draf tersimpan otomatis setiap perubahan.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------- VIEW: GUIDE ---------- -->
+    <section class="view" id="view-guide" hidden>
+      <div class="panel glass guide">
+        <div class="panel-head"><h3>Panduan Penggunaan</h3></div>
+        <ol class="guide-list">
+          <li><b>Buat flipbook</b> — klik “Buat Flipbook Baru”, lalu unggah satu file PDF atau beberapa gambar (JPG/PNG/WEBP).</li>
+          <li><b>Atur urutan halaman</b> — seret kartu halaman pada editor untuk menentukan urutan final.</li>
+          <li><b>Isi detail buku</b> — judul, penulis, deskripsi, cover, warna tema, ukuran, kecepatan animasi, dan mode baca.</li>
+          <li><b>Simpan</b> — flipbook tersimpan di penyimpanan lokal browser (IndexedDB), tanpa server.</li>
+          <li><b>Baca</b> — buka buku dari Dashboard/Koleksi. Gunakan tombol panah, keyboard (←/→), swipe di HP, atau ketik nomor halaman.</li>
+          <li><b>Fitur reader</b> — mode 1/2 halaman, zoom, fullscreen, thumbnail, bookmark, suara flip, dan daftar isi (jika PDF punya outline).</li>
+          <li><b>Bagikan</b> — salin link, buka di tab baru, buat QR code, atau ekspor kembali ke PDF / cetak.</li>
+        </ol>
+        <div class="guide-tip glass">💡 Tips: gunakan PDF berukuran sedang agar rendering lebih cepat. Semua proses dilakukan di browser Anda.</div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- ===================== READER OVERLAY ===================== -->
+<div id="reader" class="reader" hidden>
+  <div class="reader-top glass">
+    <button class="icon-btn" id="rBack" title="Kembali ke Dashboard">←</button>
+    <div class="r-title"><h3 id="rTitle">Judul Buku</h3><p id="rAuthor">Penulis</p></div>
+    <div class="r-actions">
+      <button class="icon-btn" id="rMode" title="Mode 1 / 2 halaman">▤</button>
+      <button class="icon-btn" id="rThumb" title="Thumbnail halaman">▦</button>
+      <button class="icon-btn" id="rToc" title="Daftar isi">☰</button>
+      <button class="icon-btn" id="rZoomOut" title="Zoom out">−</button>
+      <button class="icon-btn" id="rZoomIn" title="Zoom in">+</button>
+      <button class="icon-btn" id="rSound" title="Suara flip">🔊</button>
+      <button class="icon-btn" id="rBookmark" title="Bookmark halaman ini">🔖</button>
+      <button class="icon-btn" id="rFullscreen" title="Fullscreen">⛶</button>
+      <button class="icon-btn" id="rMore" title="Lainnya">⋯</button>
+    </div>
+  </div>
+
+  <div class="reader-stage" id="readerStage">
+    <div id="coverView" class="cover-view" hidden>
+      <img id="coverViewImage" alt="Sampul buku">
+      <button id="coverOpenButton" class="cover-open-button">Buka Buku</button>
+    </div>
+    <div id="backCoverView" class="cover-view" hidden>
+      <img id="backCoverViewImage" alt="Sampul belakang buku">
+    </div>
+    <div id="flipArea" class="flip-area"></div>
+    <div id="readerLoading" class="reader-loading"><div class="spinner"></div><p>Menyiapkan halaman…</p></div>
+  </div>
+
+  <div class="reader-bottom glass">
+    <button class="icon-btn" id="rPrev" title="Halaman sebelumnya">←</button>
+    <div class="r-page-nav">
+      <input type="number" id="rPageInput" min="1" value="1">
+      <span>/ <b id="rPageTotal">1</b></span>
+    </div>
+    <button class="icon-btn" id="rNext" title="Halaman berikutnya">→</button>
+  </div>
+
+  <!-- Thumbnails drawer -->
+  <div class="thumb-drawer glass" id="thumbDrawer" hidden>
+    <div class="thumb-head"><h4>Thumbnail Halaman</h4><button class="icon-btn" id="thumbClose">✕</button></div>
+    <div id="thumbGrid" class="thumb-grid"></div>
+  </div>
+
+  <!-- TOC drawer -->
+  <div class="thumb-drawer glass" id="tocDrawer" hidden>
+    <div class="thumb-head"><h4>Daftar Isi</h4><button class="icon-btn" id="tocClose">✕</button></div>
+    <div id="tocList" class="toc-list"></div>
+  </div>
+
+  <!-- More menu -->
+  <div class="more-menu glass" id="moreMenu" hidden>
+    <button id="mDownload">⬇ Download PDF</button>
+    <button id="mPrint">🖨 Cetak</button>
+    <button id="mShare">🔗 Bagikan / Salin Link</button>
+    <button id="mQr">▣ QR Code</button>
+    <button id="mPublic"><span id="mPublicLabel">🌐 Jadikan Publik</span></button>
+  </div>
+</div>
+
+<!-- ===================== MODALS ===================== -->
+<div class="modal-backdrop" id="modalBackdrop" hidden>
+  <!-- Share modal -->
+  <div class="modal glass" id="shareModal" hidden>
+    <div class="modal-head"><h3>Bagikan Flipbook</h3><button class="icon-btn" data-close-modal>✕</button></div>
+    <p class="hint" id="shareBookName">—</p>
+    <label class="field"><span>Link Flipbook</span>
+      <div class="copy-row"><input type="text" id="shareLink" readonly><button class="btn btn-primary" id="btnCopyLink">Salin</button></div>
+    </label>
+    <div class="share-actions">
+      <button class="btn btn-ghost" id="btnOpenTab">↗ Buka di Tab Baru</button>
+      <button class="btn btn-ghost" id="btnMakeQr">▣ Buat QR Code</button>
+    </div>
+    <div id="qrBox" class="qr-box" hidden></div>
+  </div>
+
+  <!-- Confirm modal -->
+  <div class="modal glass small" id="confirmModal" hidden>
+    <div class="modal-head"><h3 id="confirmTitle">Konfirmasi</h3></div>
+    <p id="confirmText">Yakin?</p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="confirmNo">Batal</button>
+      <button class="btn btn-danger" id="confirmYes">Hapus</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toastWrap" class="toast-wrap"></div>
+
+<!-- Loader global -->
+<div id="globalLoader" class="global-loader" hidden><div class="spinner big"></div><p id="globalLoaderText">Memproses…</p></div>
+
+<script src="assets/vendor/pdf.min.js"></script>
+<script src="assets/vendor/page-flip.browser.js"></script>
+<script src="assets/vendor/qrcode.min.js"></script>
+<script src="script.js?v=24"></script>
+</body>
+</html>
